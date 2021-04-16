@@ -94,8 +94,9 @@ int main(int argc, const char * argv[])
             break;
 
         default:
-            printf("\nEsa no es una opcion");
-
+            printf("\nEsa no es una opcion\n");
+            system("pause");
+            system("cls");
         }
     }
     while(opc!=3);
