@@ -15,19 +15,13 @@ https://github.com/fanpug/Boggle-en-C-/
 #include <time.h>
 
 //Definicion de la longitud del abecedario del trie
-#define TA 27
-
-using namespace std;
-
-/**************************************************************
-    DEFINICION DE FILAS Y COLUMNAS DEL TABLERO DEL BOGGLE
-**************************************************************/
+#define TA 25
 #define FILAS 8
 #define COLUMNAS 8
 
-/**************************************************************
-                ESTRUCTURA DEL NODO DEL TRIE
-**************************************************************/
+using namespace std;
+
+//Estructura del nodo
 typedef struct nodot
 {
     struct nodot *rutas[TA];
@@ -37,9 +31,6 @@ typedef struct nodot
 
 } tnodo;
 
-/**************************************************************
-                DECLARACION DE FUNCIONES (y otros)
-**************************************************************/
 //********Funciones para el funcionamiento del Trie********
 int indice(char letra);
 tnodo *nuevo(char letra);
@@ -59,9 +50,7 @@ void generarTablero();
 void imprimirTablero();
 char generateRandom();
 void gameLoop();
-void findWords();
-void findWordsUtil(bool visited[FILAS][COLUMNAS], int i, int j, char *str);
-bool isWord(char *str);
+bool verificarPalabra(string palabra);
 
 //********Variables globales para el Boggle********
 char tablero[FILAS][COLUMNAS];
@@ -118,8 +107,12 @@ void gameLoop()
 
     inicializarTablero();
     generarTablero();
+
+
     imprimirTablero();
-    void findWords();
+
+    verificarPalabra("Hola");
+
     int o;
     cin >> o;
 
@@ -293,6 +286,7 @@ void imprimirTablero()
     printf ("\n\n");
     for (int i = 0; i < FILAS; i++)
     {
+        printf ("\t");
         for (int j = 0; j < COLUMNAS; j++)
         {
             printf ("%c ", tablero[i][j]);
@@ -330,56 +324,8 @@ char generateRandom()
 /**************************************************************
                 FUNCIONES PARA RESOLVER EL TABLERO
 **************************************************************/
-void findWords()
-{
-    // Mark all characters as not visited
-    bool visited[FILAS][COLUMNAS] = { { false } };
-
-    // Initialize current string
-    char str[20];
-
-    // Consider every character and look for all words
-    // starting with this character
-    for (int i = 0; i < FILAS; i++)
-        for (int j = 0; j < COLUMNAS; j++)
-            findWordsUtil(visited, i, j, str);
-}
-
-
-void findWordsUtil(bool visited[FILAS][COLUMNAS], int i, int j, char *str)
-{
-    // Mark current cell as visited and append current character
-    // to str
-    visited[i][j] = true;
-    str = str + tablero[i][j];
-
-    // If str is present in dictionary, then print it
-    if (isWord(str))
-        cout << str << endl;
-
-    // Traverse 8 adjacent cells of boggle[i][j]
-    for (int row = i - 1; row <= i + 1 && row < FILAS; row++)
-        for (int col = j - 1; col <= j + 1 && col < COLUMNAS; col++)
-            if (row >= 0 && col >= 0 && !visited[row][col])
-                findWordsUtil(visited, row, col, str);
-
-    // Erase current character from string and mark visited
-    // of current cell as false
-    //str.erase(str.length() - 1);
-    //str[0] = " ";
-    visited[i][j] = false;
-}
-
-bool isWord(char *str)
-{
-    //Busca en el trie la palabra
-    if(buscar(str) == 1){
-        return true;
-    }
-    else {
-        return false;
-    }
-
+bool verificarPalabra(string palabra){
+    return false;
 }
 
 
