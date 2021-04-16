@@ -54,6 +54,8 @@ dkms.conf
 # Otros
 **/obj
 **/bin
+**/.vscode
+*.json
 *.cbp
 *.depend
 *.layout
