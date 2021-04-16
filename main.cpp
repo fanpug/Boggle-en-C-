@@ -59,6 +59,9 @@ void generarTablero();
 void imprimirTablero();
 char generateRandom();
 void gameLoop();
+void findWords();
+void findWordsUtil(bool visited[FILAS][COLUMNAS], int i, int j, char *str);
+bool isWord(char *str);
 
 //********Variables globales para el Boggle********
 char tablero[FILAS][COLUMNAS];
@@ -116,6 +119,7 @@ void gameLoop()
     inicializarTablero();
     generarTablero();
     imprimirTablero();
+    void findWords();
     int o;
     cin >> o;
 
@@ -324,18 +328,58 @@ char generateRandom()
 
 
 /**************************************************************
-                FUNCION PARA RESOLVER EL TABLERO
+                FUNCIONES PARA RESOLVER EL TABLERO
 **************************************************************/
+void findWords()
+{
+    // Mark all characters as not visited
+    bool visited[FILAS][COLUMNAS] = { { false } };
 
-//VAMOS A RESOLVER EL TABLERO QUE SE GENERE, ENCONTRAR TODAS LAS PALABRAS
-//POSIBLES, QUE EXISTAN EN NUESTRO DICCIONARIO, DEL TABLERO
-//SI NO SE ENCUENTRAN MAS DE 3 PALABRAS GENERAMOS OTRO TABLERO
-//UNA VEZ QUE SE ENCUENTREN TODAS LAS PALABRAS DAMOS UN MENSAJE DE
-//FELICIDADES Y VOLVEMOS AL MENU PRINCIPAL
+    // Initialize current string
+    char str[20];
+
+    // Consider every character and look for all words
+    // starting with this character
+    for (int i = 0; i < FILAS; i++)
+        for (int j = 0; j < COLUMNAS; j++)
+            findWordsUtil(visited, i, j, str);
+}
 
 
+void findWordsUtil(bool visited[FILAS][COLUMNAS], int i, int j, char *str)
+{
+    // Mark current cell as visited and append current character
+    // to str
+    visited[i][j] = true;
+    str = str + tablero[i][j];
 
+    // If str is present in dictionary, then print it
+    if (isWord(str))
+        cout << str << endl;
 
+    // Traverse 8 adjacent cells of boggle[i][j]
+    for (int row = i - 1; row <= i + 1 && row < FILAS; row++)
+        for (int col = j - 1; col <= j + 1 && col < COLUMNAS; col++)
+            if (row >= 0 && col >= 0 && !visited[row][col])
+                findWordsUtil(visited, row, col, str);
 
+    // Erase current character from string and mark visited
+    // of current cell as false
+    //str.erase(str.length() - 1);
+    //str[0] = " ";
+    visited[i][j] = false;
+}
+
+bool isWord(char *str)
+{
+    //Busca en el trie la palabra
+    if(buscar(str) == 1){
+        return true;
+    }
+    else {
+        return false;
+    }
+
+}
 
 
