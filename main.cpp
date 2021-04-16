@@ -1,10 +1,10 @@
-/*********************************************
-
+/************************************************
 				CREADO POR
 	HUMBERTO ALEJANDRO NAVARRO ANDUJO
      RAUL ALEJANDRO DIAZ GUTIERREZ
 
-*********************************************/
+https://github.com/fanpug/Boggle-en-C-/
+************************************************/
 //diccionario20202.txt
 
 #include <stdlib.h>
