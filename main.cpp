@@ -2,6 +2,8 @@
 				CREADO POR
 	HUMBERTO ALEJANDRO NAVARRO ANDUJO
      RAUL ALEJANDRO DIAZ GUTIERREZ
+
+  https://github.com/fanpug/Boggle-en-C-
 *********************************************/
 //diccionario20202.txt
 
@@ -25,6 +27,7 @@ typedef struct snodo
     char letra;
     struct snodo *hijos[28];
     struct snodo *padre;
+    bool juega;
     int fin;
 } tnodo;
 
@@ -82,7 +85,7 @@ int main(int argc, const char * argv[])
             break;
 
         case 2:
-            printf("\nCooming Soon!");
+            printf("\nCooming Soon!");//jaja salu2
             system("pause");
             system("cls");
             break;
@@ -108,7 +111,7 @@ int main(int argc, const char * argv[])
 **************************************************************/
 void gameLoop()
 {
-    int puntos = 0;
+    int puntos = 0, vidas = 3;
     int x = 0;
     string palab = " ";
     char cadena[25];
@@ -119,47 +122,65 @@ void gameLoop()
     cout << "puede escribir 'Exit' \n\n";
     system("pause");
 
-    while(palab != "Exit")
-    {
+    //LOOP PRINCIPAL DEL JUEGO
+    do{
         system("CLS");
+        reiniciar();
 
+        //se imprime el tablero y los puntos del jugador
         imprimirTablero();
         cout << "\t\t\t\tPuntos Actuales: " << puntos << "\n";
-
+        cout << "\t\t\t\tVidas Restantes: " << vidas << "\n";
         cout << "\tIntroduzca la palabra: ";
         cin >> palab;
 
+        //revisa si la palabra es Exit para salirse del while
         if(palab == "Exit")
         {
             break;
         }
         else
         {
+            //convierte la variable palab de string a char
             strcpy(cadena, palab.c_str());
+            //manda la cadena para verificar si la palabra es posible en el tablero
             validarPalabra(cadena);
 
+            //si la palabra es posible
             if(encontrada == true)
             {
+                //la buscamos dentro del Trie
                 x = buscar(cadena);
                 if(x == 1)
                 {
-                    printf("\nCorrecto!");
-                    puntos++;
-                    reiniciar();
+                    //si existe le decimos felicidades al usuario
+                    printf("\nCorrecto! WOW!!!");
+                    puntos += strlen(cadena);
+
                 }
                 else
                 {
-                    printf("\nIncorrecto!");
+                    //si no le decimos que es listo pero no tanto
+                    printf("\nIncorrecto! Esa palabra no es parte del Trie!!");
+                    vidas--;
                 }
             }
             else
             {
-                printf("\nIncorrecto!");
+                //si no le decimos que esta tonto
+                printf("\nIncorrecto! No se puede escribir esa palabra!!");
+                vidas--;
             }
+        }
+        if(vidas <= 0){
+            system("cls");
+            printf("\n\nGAME OVER!\n\n");
+            system("pause");
+            break;
         }
         printf("\n\n");
         system("pause");
-    }
+    }while(true);
 
     system("CLS");
 }
@@ -260,7 +281,7 @@ void leerDiccionario()
     FILE *archivo;
 
     //ejemplo();
-    archivo = fopen("diccionario20202.txt","r");//abre el archivo
+    archivo = fopen("diccionario20202.txt","r");//abre el archivo con permisos de solo lecta
 
     if(archivo == NULL)
         exit(1);
@@ -339,15 +360,20 @@ void imprimirTablero()
 {
     //Imprime el tablero de forma bonita
     printf ("\n\n");
+    cout << "\t    ____________________________ \n";
+    cout << "\t   ||--------------------------||\n";
     for (int i = 0; i < FILAS; i++)
     {
-        cout << "\t   ";
+        cout << "\t   ||  ";
         for (int j = 0; j < COLUMNAS; j++)
         {
-            printf ("%c ", tablero[i][j]);
+            printf ("%c  ", tablero[i][j]);
         }
+        cout << "||";
         printf ("\n");
     }
+    cout << "\t   ||--------------------------||\n";
+    cout << "\t   ||__________________________|| \n";
     printf ("\n\n");
 }
 
@@ -360,8 +386,8 @@ char generateRandom()
     //Funcion para generar letras del tablero y mantener un balance entre
     //vocales y consonantes. (Sacado de internet)
 
-    string consonants = "BCDFGHJKLMNPQRSTVWXYZ";
-    string vowels = "AEIOU";
+    string consonants = "bcdfghjklmnpqrstvwxyz";
+    string vowels = "aeiou";
     int num = (rand() % (4 - 0 + 1)) + 0;
 
     if(num == 0)
@@ -433,7 +459,7 @@ void vecinos(int i, int j, char *siguiente, int s)
     }
 }
 
-//funcion para reiniciar las banderas
+//funcion para reiniciar las banderas del tablero
 void reiniciar()
 {
     for(int i=0; i<FILAS; i++)
@@ -445,3 +471,12 @@ void reiniciar()
     }
     encontrada = false;
 }
+
+
+
+
+
+
+
+
+
