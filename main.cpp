@@ -13,6 +13,8 @@ https://github.com/fanpug/Boggle-en-C-/
 #include <fstream>
 #include <string>
 #include <time.h>
+#include <iomanip>
+#include <cstring>
 
 //Definicion de la longitud del abecedario del trie
 #define TA 25
@@ -211,19 +213,36 @@ int insertar(char *cade)
 void leerDiccionario()
 {
 
-    char cadena[128];
+    //char cadena[128];
 
-    ifstream fe("diccionario20202.txt");
+    /*ifstream inFile;
+    inFile.open("Diccionario20202.txt");
 
-    while (!fe.eof())
+    if(!inFile)
+    {
+        cout<<"No se puede abrir el archivo."<<endl;
+        exit(1);
+    }
+
+    while (!inFile.eof())
     {
 
-        fe >> cadena;
+        inFile >> cadena;
         //cout << cadena << endl;
         insertar(cadena);
     }
 
-    fe.close();
+    inFile.close();*/
+    fstream file;
+    string word, filename;
+    filename = "Diccionario20202.txt";
+    file.open(filename.c_str());
+    while(file >> word)
+    {
+        char cstr[word.size() + 1];
+        strcpy(cstr, word.c_str());
+        insertar(cstr);
+    }
 }
 
 
