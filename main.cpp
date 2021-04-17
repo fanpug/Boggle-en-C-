@@ -1,36 +1,31 @@
-/************************************************
+/*********************************************
 				CREADO POR
 	HUMBERTO ALEJANDRO NAVARRO ANDUJO
      RAUL ALEJANDRO DIAZ GUTIERREZ
-
-https://github.com/fanpug/Boggle-en-C-/
-************************************************/
+*********************************************/
 //diccionario20202.txt
 
 #include <stdlib.h>
 #include <stdio.h>
 #include <iostream>
 #include <fstream>
-#include <string>
-#include <time.h>
-#include <iomanip>
 #include <cstring>
+#include <time.h>
 
 //Definicion de la longitud del abecedario del trie
-#define TA 25
+#define TA 27
 #define FILAS 8
 #define COLUMNAS 8
 
 using namespace std;
 
 //Estructura del nodo
-typedef struct nodot
+typedef struct snodo
 {
-    struct nodot *rutas[TA];
-    int fin;
     char letra;
-    struct nodot *papa;
-
+    struct snodo *hijos[28];
+    struct snodo *padre;
+    int fin;
 } tnodo;
 
 //********Funciones para el funcionamiento del Trie********
@@ -40,7 +35,7 @@ int buscar(char *cade);
 int insertar(char *cade);
 
 //********Variables globales para el Trie********
-tnodo *trie=NULL;
+tnodo *raiz=NULL;
 tnodo *aux;
 char *letra;
 
@@ -52,11 +47,15 @@ void generarTablero();
 void imprimirTablero();
 char generateRandom();
 void gameLoop();
-bool verificarPalabra(string palabra);
+
+void validarPalabra(char *cadena);
+void vecinos(int i, int j, char *siguiente, int s);
+void reiniciar();
 
 //********Variables globales para el Boggle********
 char tablero[FILAS][COLUMNAS];
-
+int banderas[FILAS][COLUMNAS];
+bool encontrada;
 
 /**************************************************************
                         FUNCION MAIN
@@ -65,7 +64,9 @@ int main(int argc, const char * argv[])
 {
     srand(time(0));
     int opc;
-    trie = nuevo(0);
+    raiz = nuevo(0);
+    raiz->padre = NULL;
+
     leerDiccionario();
     printf("Creado por Humberto Navarro y Alejandro Diaz\n\n");
 
@@ -81,7 +82,9 @@ int main(int argc, const char * argv[])
             break;
 
         case 2:
-            printf("\nSi existe");
+            printf("\nCooming Soon!");
+            system("pause");
+            system("cls");
             break;
 
         case 3: //salir
@@ -105,18 +108,58 @@ int main(int argc, const char * argv[])
 **************************************************************/
 void gameLoop()
 {
-    system("CLS");
-
+    int puntos = 0;
+    int x = 0;
+    string palab = " ";
+    char cadena[25];
     inicializarTablero();
     generarTablero();
 
+    cout << "\n\nSi desea regresar al menu principal, en cualquier momento" << endl;
+    cout << "puede escribir 'Exit' \n\n";
+    system("pause");
 
-    imprimirTablero();
+    while(palab != "Exit")
+    {
+        system("CLS");
 
-    verificarPalabra("Hola");
+        imprimirTablero();
+        cout << "\t\t\t\tPuntos Actuales: " << puntos << "\n";
 
-    int o;
-    cin >> o;
+        cout << "\tIntroduzca la palabra: ";
+        cin >> palab;
+
+        if(palab == "Exit")
+        {
+            break;
+        }
+        else
+        {
+            strcpy(cadena, palab.c_str());
+            validarPalabra(cadena);
+
+            if(encontrada == true)
+            {
+                x = buscar(cadena);
+                if(x == 1)
+                {
+                    printf("\nCorrecto!");
+                    puntos++;
+                    reiniciar();
+                }
+                else
+                {
+                    printf("\nIncorrecto!");
+                }
+            }
+            else
+            {
+                printf("\nIncorrecto!");
+            }
+        }
+        printf("\n\n");
+        system("pause");
+    }
 
     system("CLS");
 }
@@ -151,7 +194,7 @@ tnodo *nuevo(char letra)
         aux->letra = letra;
         aux->fin=0;
         for(i=0; i<TA; i++)
-            aux->rutas[i]=NULL;
+            aux->hijos[i]=NULL;
     }
     return aux;
 }
@@ -163,16 +206,16 @@ tnodo *nuevo(char letra)
 int buscar(char *cade)
 {
     int exito=0;
-    aux=trie;
+    aux=raiz;
     letra=cade;
 
-    while(aux->rutas[indice(*letra)] !=NULL) //si hay un camino
+    while(aux->hijos[indice(*letra)] != NULL) //si hay un camino
     {
-        aux=aux->rutas[indice(*letra)];
+        aux = aux->hijos[indice(*letra)];
         letra++;
     }
-    if(aux->fin && *letra==0)
-        exito=1;
+    if(aux->fin && *letra == 0)
+        exito = 1;  //palabra existe
 
     return exito;
 
@@ -193,12 +236,13 @@ int insertar(char *cade)
         while(*letra!=0) //me faltan nodos
         {
             aux2=nuevo(*letra);
-            aux2->papa=aux;
-            aux->rutas[indice(*letra)]=aux2;
+            aux2->padre=aux;
+            aux->hijos[indice(*letra)]=aux2;
             aux=aux2;
             letra++;
         }
         aux->fin=1;
+
     }
     return x;
 
@@ -212,35 +256,28 @@ int insertar(char *cade)
 void leerDiccionario()
 {
 
-    //char cadena[128];
+    char cadena[50];
+    FILE *archivo;
 
-    /*ifstream inFile;
-    inFile.open("Diccionario20202.txt");
+    //ejemplo();
+    archivo = fopen("diccionario20202.txt","r");//abre el archivo
 
-    if(!inFile)
-    {
-        cout<<"No se puede abrir el archivo."<<endl;
+    if(archivo == NULL)
         exit(1);
-    }
-
-    while (!inFile.eof())
+    else
     {
-
-        inFile >> cadena;
-        //cout << cadena << endl;
-        insertar(cadena);
+        while(!feof(archivo)) //si existe algo en el archivo
+        {
+            fgets(cadena,50,archivo);//se obtiene cada cadena y se guarda en cadena
+            insertar(cadena);
+        }
     }
-
-    inFile.close();*/
-    fstream file;
-    string word, filename;
-    filename = "diccionario20202.txt";
-    file.open(filename.c_str());
-    while(file >> word)
+    fclose(archivo);//se cierra el archivo
+    int t = 0;
+    while(cadena[t] != '\0') //para que no quede guardada la cadena
     {
-        char cstr[word.size() + 1];
-        strcpy(cstr, word.c_str());
-        insertar(cstr);
+        cadena[t] = '\0';
+        t++;
     }
 }
 
@@ -304,7 +341,7 @@ void imprimirTablero()
     printf ("\n\n");
     for (int i = 0; i < FILAS; i++)
     {
-        printf ("\t");
+        cout << "\t   ";
         for (int j = 0; j < COLUMNAS; j++)
         {
             printf ("%c ", tablero[i][j]);
@@ -332,7 +369,8 @@ char generateRandom()
         num = (rand() % (4 - 0 + 1)) + 0;
         return vowels[num];
     }
-    else{
+    else
+    {
         num = (rand() % (20 - 0 + 1)) + 0;
         return consonants[num];
     }
@@ -340,10 +378,70 @@ char generateRandom()
 
 
 /**************************************************************
-                FUNCIONES PARA RESOLVER EL TABLERO
+        FUNCIONES PARA VALIDAR LA PALABRA EN EL TABLERO
 **************************************************************/
-bool verificarPalabra(string palabra){
-    return false;
+void validarPalabra(char *cadena)
+{
+    int s = 0;
+
+    for(int i = 0; i < FILAS; i++)
+    {
+        for(int j = 0; j < COLUMNAS; j++)
+        {
+            s = 1;
+            if(tablero[i][j] == cadena[0]) //se checa si una letra en el tablero es igual a la primera a buscar
+            {
+                banderas[i][j] = 1;//se levanta una bandera en el lugar de la letra inicial
+                vecinos(i, j, cadena, s);//función para checar alrededor de la letra si existe un camino a las demás
+                if(encontrada == true) //salir de los ciclos
+                {
+                    i=7;
+                    j=7;
+                }
+                else
+                {
+                    reiniciar();
+                }
+            }
+        }
+    }
 }
 
+//función recursiva para checar si existe el camino en todas las direcciones hacia una palabra buscada
+void vecinos(int i, int j, char *siguiente, int s)
+{
+    if(s == strlen(siguiente)) //si se llegó al final, se marca la palabra como encontrada
+    {
+        encontrada = true;
+    }
 
+    for(int k=1; k>=-1; k--)
+    {
+        for(int l=1; l>=-1; l--)
+        {
+            if(i-k == -1 || i-k == FILAS) {}
+            else if(j-l == -1 || j-l == COLUMNAS) {}
+            else
+            {
+                if(tablero[i-k][j-l] == siguiente[s] && banderas[i-k][j-l] == 0) //se busca alrededor de cada letra
+                {
+                    banderas[i][j] = 1;
+                    vecinos(i-k, j-l, siguiente, s+1);//avanzar entre letras
+                }
+            }
+        }
+    }
+}
+
+//funcion para reiniciar las banderas
+void reiniciar()
+{
+    for(int i=0; i<FILAS; i++)
+    {
+        for(int j=0; j<COLUMNAS; j++)
+        {
+            banderas[i][j] = 0;
+        }
+    }
+    encontrada = false;
+}
