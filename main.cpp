@@ -199,7 +199,6 @@ int insertar(char *cade)
             letra++;
         }
         aux->fin=1;
-
     }
     return x;
 
@@ -235,7 +234,7 @@ void leerDiccionario()
     inFile.close();*/
     fstream file;
     string word, filename;
-    filename = "Diccionario20202.txt";
+    filename = "diccionario20202.txt";
     file.open(filename.c_str());
     while(file >> word)
     {
