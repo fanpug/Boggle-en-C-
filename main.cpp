@@ -5,6 +5,7 @@
 
   https://github.com/fanpug/Boggle-en-C-
 *********************************************/
+//Manejo de colisiones -> Sondeo Cuadratico
 //diccionario20202.txt
 
 #include <stdlib.h>
@@ -18,6 +19,7 @@
 #define TA 27
 #define FILAS 8
 #define COLUMNAS 8
+#define M 133 //numero primo no cercano a potencia de 2 o 10 para hash de division
 
 using namespace std;
 
@@ -30,6 +32,16 @@ typedef struct snodo
     bool juega;
     int fin;
 } tnodo;
+
+//ESTRUCTURA DE TABLA HASH
+typedef struct snodo
+{
+    char llave[3]; //Caracteres del usuario
+    float puntuacion;
+    bool ocupado; //si casilla ocupada == true
+} trabajadores;
+
+trabajadores arr[M];
 
 //********Funciones para el funcionamiento del Trie********
 int indice(char letra);
@@ -60,6 +72,14 @@ char tablero[FILAS][COLUMNAS];
 int banderas[FILAS][COLUMNAS];
 bool encontrada;
 
+//FUNCIONES DE HASH
+void inicializarHash();
+int fhash(char *llave);
+int insertar(char *nombre, char *llave, float sal);
+int buscar(char *llave);
+int eliminar(char *llave);
+
+
 /**************************************************************
                         FUNCION MAIN
 **************************************************************/
@@ -71,6 +91,8 @@ int main(int argc, const char * argv[])
     raiz->padre = NULL;
 
     leerDiccionario();
+    inicializarHash();
+
     printf("Creado por Humberto Navarro y Alejandro Diaz\n\n");
 
     do
@@ -242,6 +264,7 @@ int buscar(char *cade)
 
 }
 
+
 /**************************************************************
                     FUNCION INSERTAR DEL TRIE
 **************************************************************/
@@ -276,7 +299,6 @@ int insertar(char *cade)
 **************************************************************/
 void leerDiccionario()
 {
-
     char cadena[50];
     FILE *archivo;
 
@@ -471,6 +493,126 @@ void reiniciar()
     }
     encontrada = false;
 }
+
+
+/**************************************************************
+                    FUNCIONES PARA EL HASH
+**************************************************************/
+void inicializarHash()
+{
+    for(int i = 0; i < M; i++)
+    {
+        //todas las casillas inician desocupadas
+        arr[i].ocupado = false;
+    }
+}
+
+int fhash(char *llave)
+{
+    int indice = 0, modulo = 0;
+
+    //Usa las 4 letras (letra * num de letras*10 * posicion de letra)
+    indice = llave[0] * (40 * 1);
+    indice += llave[1] * (40 * 2);
+    indice += llave[2] * (40 * 3);
+    indice += llave[3] * (40 * 4);
+
+    //usa los 3 caracteres del final (caracter * num de caracteres*10 * posicion descendiente)
+    indice += llave[12] * (30 * 3);
+    indice += llave[11] * (30 * 2);
+    indice += llave[10] * (30 * 1);
+
+    //suma los numeros de la fecha de nacimiento
+    for(int i = 4; i < 10; i++){
+        indice += llave[i];
+    }
+
+    modulo = indice % M;
+    //printf("Indice %i indice con modulo %i", indice, modulo);
+    //system("pause");
+
+    return modulo;
+}
+
+int insertar(char *nombre, char *llave, float sal){
+    int pos = 0, orig = 0;  //posicion actual, casilla original
+    int intento = 1;    //numero de intento de insercion
+    orig = pos = fhash(llave);
+    int x = -1; //-1 = no se pudo insertar
+
+    //mientras la casilla este ocupada y no me haya pasado del limite maximo del arreglo, sigue intentando
+    while(arr[pos].ocupado == true && pos < M){
+        intento++;
+        pos = orig + (intento * intento)%M;
+    }
+
+    //si nos pasamos del arreglo, pero no encontramos espacio
+    if(arr[pos].ocupado == true){
+        while(arr[pos].ocupado == true && pos > -1){
+            intento++;
+            pos = orig - (intento * intento)%M;
+        }
+    }
+
+    //si el lugar no esta ocupado
+    if(arr[pos].ocupado == false){
+        arr[pos].salario = sal;
+        strcpy(arr[pos].nombre, nombre);
+        strcpy(arr[pos].llave, llave);
+        arr[pos].ocupado = true;    //si no estaba ocupado, ahora si
+        x = pos;
+    }
+
+    return x;
+}
+
+int buscar(char *llave){
+    int pos = 0, orig = 0, i = -1;     //posicion actual, posicion original, variable equis para regresar posicion
+    int bandera = 0, intento = 1;   //bandera para bucle, intentos de sondeo
+    orig = pos = fhash(llave);
+
+    do{
+        //mejor caso, la llave se encuentra luego luego y la casilla esta ocupada
+        if(strcmp(llave, arr[pos].llave) == 0 && arr[pos].ocupado == true){
+            i = pos;
+            bandera = 1; //se encontro la llave
+        } else {
+            intento++;
+            pos = orig + (intento * intento)%M;
+        }
+
+    }while(bandera == 0 && pos < M);
+
+    //si nos pasamos del arreglo, pero no encontramos el que buscamos
+    if(bandera == 0){
+        while(arr[pos].ocupado == true && pos > -1){
+            intento++;
+            pos = orig - (intento * intento)%M;
+            if(arr[pos].ocupado == false){
+                i = pos;
+            }
+        }
+    }
+
+    return i;
+}
+
+int eliminar(char *llave){
+    int x = -1;
+
+    x = buscar(llave);
+
+    if(x >= 0){
+        arr[x].ocupado = false; //si se encuentra entonces se elimina
+    }
+
+    return x;
+}
+
+
+
+
+
 
 
 
