@@ -34,10 +34,10 @@ typedef struct snodo
 } tnodo;
 
 //ESTRUCTURA DE TABLA HASH
-typedef struct snodo
+typedef struct hashnodo
 {
-    char llave[3]; //Caracteres del usuario
-    float puntuacion;
+    char llave[20]; //Caracteres del usuario
+    bool palabraEncontrada;
     bool ocupado; //si casilla ocupada == true
 } trabajadores;
 
@@ -75,7 +75,7 @@ bool encontrada;
 //FUNCIONES DE HASH
 void inicializarHash();
 int fhash(char *llave);
-int insertarHash(char *nombre, char *llave, float sal);
+int insertarHash(char *llave);
 int buscarHash(char *llave);
 int eliminarHash(char *llave);
 
@@ -93,7 +93,7 @@ int main(int argc, const char * argv[])
     leerDiccionario();
     inicializarHash();
 
-    printf("Creado por Humberto Navarro y Alejandro Diaz\t\t\t\t\tMayo 2021\n\n");
+    printf("Creado por Humberto Navarro y Alejandro Diaz\t\tMayo 2021\n\n");
 
     do
     {
@@ -145,7 +145,8 @@ void gameLoop()
     system("pause");
 
     //LOOP PRINCIPAL DEL JUEGO
-    do{
+    do
+    {
         system("CLS");
         reiniciar();
 
@@ -175,15 +176,38 @@ void gameLoop()
                 x = buscar(cadena);
                 if(x == 1)
                 {
-                    //si existe le decimos felicidades al usuario
-                    printf("\nCorrecto! WOW!!!");
-                    puntos += strlen(cadena);
+                    x = -1;
+                    //la buscamos dentro de la lista de palabras encontradas
+                    x = buscarHash(cadena);
+                    if(x > M || x < 0)
+                    {
+                        //la palabra no ha sido encontrada aun, le decimos felicidades al usuario por ser muy listo
+                        printf("\nCorrecto! WOW!!!");
+                        puntos += strlen(cadena);
+                        x = insertarHash(cadena);
+                        if(x > M || x < 0)
+                        {
+                            //no pudo insertar la palabra por alguna razon
+                            printf("\n\nNO HAY SISTEMA JOVEN\n");
+                        }
+                        else
+                        {
+                            //se inserto la palabra en la lista de palabras encontradas
+                            printf("\n\nSe inserto en la posicion %i de la lista de palabras encontradas!\n", x);
+                        }
+                    }
+                    else
+                    {
+                        //la palabra ya fue encontrada, se lo decimos
+                        printf("\nBuen intento, pero esa palabra ya habia sido encontrada!!");
+                    }
+
 
                 }
                 else
                 {
                     //si no le decimos que es listo pero no tanto
-                    printf("\nIncorrecto! Esa palabra no es parte del Trie!!");
+                    printf("\nIncorrecto! Esa palabra no es parte del diccionario!!");
                     vidas--;
                 }
             }
@@ -194,7 +218,8 @@ void gameLoop()
                 vidas--;
             }
         }
-        if(vidas <= 0){
+        if(vidas <= 0)
+        {
             system("cls");
             printf("\n\nGAME OVER!\n\n");
             system("pause");
@@ -202,7 +227,8 @@ void gameLoop()
         }
         printf("\n\n");
         system("pause");
-    }while(true);
+    }
+    while(true);
 
     system("CLS");
 }
@@ -412,7 +438,7 @@ char generateRandom()
     string vowels = "aeiou";
     int num = (rand() % (4 - 0 + 1)) + 0;
 
-    if(num == 0)
+    if(num == 0 || num == 1)
     {
         num = (rand() % (4 - 0 + 1)) + 0;
         return vowels[num];
@@ -511,54 +537,45 @@ int fhash(char *llave)
 {
     int indice = 0, modulo = 0;
 
-    //Usa las 4 letras (letra * num de letras*10 * posicion de letra)
-    indice = llave[0] * (40 * 1);
-    indice += llave[1] * (40 * 2);
-    indice += llave[2] * (40 * 3);
-    indice += llave[3] * (40 * 4);
-
-    //usa los 3 caracteres del final (caracter * num de caracteres*10 * posicion descendiente)
-    indice += llave[12] * (30 * 3);
-    indice += llave[11] * (30 * 2);
-    indice += llave[10] * (30 * 1);
-
-    //suma los numeros de la fecha de nacimiento
-    for(int i = 4; i < 10; i++){
-        indice += llave[i];
-    }
+    //Usa las primeras 4 letras (letra * numeroMaximoDeLetras*10 * posicion de letra)
+    indice = llave[0] * (200 * 1);
+    indice += llave[1] * (200 * 2);
+    indice += llave[2] * (200 * 3);
+    indice += llave[3] * (200 * 4);
 
     modulo = indice % M;
-    //printf("Indice %i indice con modulo %i", indice, modulo);
-    //system("pause");
-
     return modulo;
 }
 
-int insertarHash(char *nombre, char *llave, float sal){
+int insertarHash(char *llave)
+{
     int pos = 0, orig = 0;  //posicion actual, casilla original
     int intento = 1;    //numero de intento de insercion
     orig = pos = fhash(llave);
     int x = -1; //-1 = no se pudo insertar
 
     //mientras la casilla este ocupada y no me haya pasado del limite maximo del arreglo, sigue intentando
-    while(arr[pos].ocupado == true && pos < M){
+    while(arr[pos].ocupado == true && pos < M)
+    {
         intento++;
         pos = orig + (intento * intento)%M;
     }
 
     //si nos pasamos del arreglo, pero no encontramos espacio
-    if(arr[pos].ocupado == true){
-        while(arr[pos].ocupado == true && pos > -1){
+    if(arr[pos].ocupado == true)
+    {
+        while(arr[pos].ocupado == true && pos > -1)
+        {
             intento++;
             pos = orig - (intento * intento)%M;
         }
     }
 
     //si el lugar no esta ocupado
-    if(arr[pos].ocupado == false){
-        arr[pos].salario = sal;
-        strcpy(arr[pos].nombre, nombre);
+    if(arr[pos].ocupado == false)
+    {
         strcpy(arr[pos].llave, llave);
+        arr[pos].palabraEncontrada = true; //la palabra ha sido encontrada
         arr[pos].ocupado = true;    //si no estaba ocupado, ahora si
         x = pos;
     }
@@ -566,43 +583,56 @@ int insertarHash(char *nombre, char *llave, float sal){
     return x;
 }
 
-int buscarHash(char *llave){
+int buscarHash(char *llave)
+{
     int pos = 0, orig = 0, i = -1;     //posicion actual, posicion original, variable equis para regresar posicion
     int bandera = 0, intento = 1;   //bandera para bucle, intentos de sondeo
-    orig = pos = fhash(llave);
+    orig = fhash(llave);
+    pos = orig;
 
-    do{
+    do
+    {
         //mejor caso, la llave se encuentra luego luego y la casilla esta ocupada
-        if(strcmp(llave, arr[pos].llave) == 0 && arr[pos].ocupado == true){
+        if(strcmp(llave, arr[pos].llave) == 0 && arr[pos].ocupado == true)
+        {
             i = pos;
             bandera = 1; //se encontro la llave
-        } else {
+        }
+        else
+        {
             intento++;
             pos = orig + (intento * intento)%M;
         }
 
-    }while(bandera == 0 && pos < M);
+    }
+    while(bandera == 0 && pos < M);
 
     //si nos pasamos del arreglo, pero no encontramos el que buscamos
-    if(bandera == 0){
-        while(arr[pos].ocupado == true && pos > -1){
-            intento++;
+    if(bandera == 0)
+    {
+        intento = 1;
+        do
+        {
             pos = orig - (intento * intento)%M;
-            if(arr[pos].ocupado == false){
+            if(strcmp(llave, arr[pos].llave) == 0 && arr[pos].ocupado == true)
+            {
                 i = pos;
             }
-        }
+            intento++;
+        }while(arr[pos].ocupado == true || pos > -1);
     }
 
     return i;
 }
 
-int eliminarHash(char *llave){
+int eliminarHash(char *llave)
+{
     int x = -1;
 
     x = buscarHash(llave);
 
-    if(x >= 0){
+    if(x >= 0)
+    {
         arr[x].ocupado = false; //si se encuentra entonces se elimina
     }
 
