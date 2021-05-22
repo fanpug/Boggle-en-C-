@@ -77,7 +77,7 @@ void inicializarHash();
 int fhash(char *llave);
 int insertarHash(char *llave);
 int buscarHash(char *llave);
-int eliminarHash(char *llave);
+int eliminarHash();
 
 
 /**************************************************************
@@ -229,7 +229,7 @@ void gameLoop()
         system("pause");
     }
     while(true);
-
+    eliminarHash();
     system("CLS");
 }
 
@@ -619,21 +619,25 @@ int buscarHash(char *llave)
                 i = pos;
             }
             intento++;
-        }while(arr[pos].ocupado == true || pos > -1);
+        }
+        while(arr[pos].ocupado == true || pos > -1);
     }
 
     return i;
 }
 
-int eliminarHash(char *llave)
+int eliminarHash()
 {
-    int x = -1;
+    int x = 0;
 
-    x = buscarHash(llave);
 
-    if(x >= 0)
+    while(x < M)
     {
-        arr[x].ocupado = false; //si se encuentra entonces se elimina
+        if(arr[x].ocupado = true)
+        {
+            arr[x].ocupado = false; //si estaba ocupado entonces ya no
+        }
+        x++;
     }
 
     return x;
