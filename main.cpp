@@ -75,9 +75,9 @@ bool encontrada;
 //FUNCIONES DE HASH
 void inicializarHash();
 int fhash(char *llave);
-int insertar(char *nombre, char *llave, float sal);
-int buscar(char *llave);
-int eliminar(char *llave);
+int insertarHash(char *nombre, char *llave, float sal);
+int buscarHash(char *llave);
+int eliminarHash(char *llave);
 
 
 /**************************************************************
@@ -93,7 +93,7 @@ int main(int argc, const char * argv[])
     leerDiccionario();
     inicializarHash();
 
-    printf("Creado por Humberto Navarro y Alejandro Diaz\n\n");
+    printf("Creado por Humberto Navarro y Alejandro Diaz\t\t\t\t\tMayo 2021\n\n");
 
     do
     {
@@ -534,7 +534,7 @@ int fhash(char *llave)
     return modulo;
 }
 
-int insertar(char *nombre, char *llave, float sal){
+int insertarHash(char *nombre, char *llave, float sal){
     int pos = 0, orig = 0;  //posicion actual, casilla original
     int intento = 1;    //numero de intento de insercion
     orig = pos = fhash(llave);
@@ -566,7 +566,7 @@ int insertar(char *nombre, char *llave, float sal){
     return x;
 }
 
-int buscar(char *llave){
+int buscarHash(char *llave){
     int pos = 0, orig = 0, i = -1;     //posicion actual, posicion original, variable equis para regresar posicion
     int bandera = 0, intento = 1;   //bandera para bucle, intentos de sondeo
     orig = pos = fhash(llave);
@@ -597,10 +597,10 @@ int buscar(char *llave){
     return i;
 }
 
-int eliminar(char *llave){
+int eliminarHash(char *llave){
     int x = -1;
 
-    x = buscar(llave);
+    x = buscarHash(llave);
 
     if(x >= 0){
         arr[x].ocupado = false; //si se encuentra entonces se elimina
