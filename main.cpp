@@ -14,6 +14,9 @@
 #include <fstream>
 #include <cstring>
 #include <time.h>
+#include <string>
+#include <bits/stdc++.h>
+#include <iomanip>
 
 //Definicion de la longitud del abecedario del trie
 #define TA 27
@@ -50,7 +53,7 @@ int buscar(char *cade);
 int insertar(char *cade);
 
 //********Variables globales para el Trie********
-tnodo *raiz=NULL;
+tnodo *raiz = NULL;
 tnodo *aux;
 char *letra;
 
@@ -62,6 +65,7 @@ void generarTablero();
 void imprimirTablero();
 char generateRandom();
 void gameLoop();
+void guardarPuntaje();
 
 void validarPalabra(char *cadena);
 void vecinos(int i, int j, char *siguiente, int s);
@@ -79,11 +83,14 @@ int insertarHash(char *llave);
 int buscarHash(char *llave);
 int eliminarHash();
 
+int puntos = 0;
+string alias;
+string respuesta;
 
 /**************************************************************
                         FUNCION MAIN
 **************************************************************/
-int main(int argc, const char * argv[])
+int main(int argc, const char *argv[])
 {
     srand(time(0));
     int opc;
@@ -98,7 +105,7 @@ int main(int argc, const char * argv[])
     do
     {
         //Imprime el menu principal y entramos al switch
-        switch(opc = menuPrincipal())
+        switch (opc = menuPrincipal())
         {
         case 1:
             system("CLS");
@@ -107,7 +114,9 @@ int main(int argc, const char * argv[])
             break;
 
         case 2:
-            printf("\nCooming Soon!");//jaja salu2
+            //se imprime la tabla de puntaciones de un usuario con un ancho de 24 espacios para que quede bonito.
+            cout << setw(24) << "ALIAS" << setw(10) << "PUNTAJE" << endl;
+            cout << setw(24) << alias << setw(10) << puntos << endl;
             system("pause");
             system("cls");
             break;
@@ -120,20 +129,17 @@ int main(int argc, const char * argv[])
             system("pause");
             system("cls");
         }
-    }
-    while(opc!=3);
-
+    } while (opc != 3);
 
     return 0;
 }
-
 
 /**************************************************************
                 FUNCION PRINCIPAL DEL JUEGO
 **************************************************************/
 void gameLoop()
 {
-    int puntos = 0, vidas = 3;
+    int vidas = 3;
     int x = 0;
     string palab = " ";
     char cadena[25];
@@ -158,7 +164,7 @@ void gameLoop()
         cin >> palab;
 
         //revisa si la palabra es Exit para salirse del while
-        if(palab == "Exit")
+        if (palab == "Exit")
         {
             break;
         }
@@ -170,22 +176,22 @@ void gameLoop()
             validarPalabra(cadena);
 
             //si la palabra es posible
-            if(encontrada == true)
+            if (encontrada == true)
             {
                 //la buscamos dentro del Trie
                 x = buscar(cadena);
-                if(x == 1)
+                if (x == 1)
                 {
                     x = -1;
                     //la buscamos dentro de la lista de palabras encontradas
                     x = buscarHash(cadena);
-                    if(x > M || x < 0)
+                    if (x > M || x < 0)
                     {
                         //la palabra no ha sido encontrada aun, le decimos felicidades al usuario por ser muy listo
                         printf("\nCorrecto! WOW!!!");
                         puntos += strlen(cadena);
                         x = insertarHash(cadena);
-                        if(x > M || x < 0)
+                        if (x > M || x < 0)
                         {
                             //no pudo insertar la palabra por alguna razon
                             printf("\n\nNO HAY SISTEMA JOVEN\n");
@@ -201,8 +207,6 @@ void gameLoop()
                         //la palabra ya fue encontrada, se lo decimos
                         printf("\nBuen intento, pero esa palabra ya habia sido encontrada!!");
                     }
-
-
                 }
                 else
                 {
@@ -218,37 +222,35 @@ void gameLoop()
                 vidas--;
             }
         }
-        if(vidas <= 0)
+        if (vidas <= 0)
         {
             system("cls");
             printf("\n\nGAME OVER!\n\n");
+            guardarPuntaje();
             system("pause");
             break;
         }
         printf("\n\n");
         system("pause");
-    }
-    while(true);
+    } while (true);
     eliminarHash();
     system("CLS");
 }
-
 
 /**************************************************************
                 FUNCION PARA DECLARAR EL ALFABETO
 **************************************************************/
 int indice(char letra)
 {
-    int x=0;
+    int x = 0;
     //A-1, B-2, ...
-    if(letra>='A' && letra<='Z')
-        x = (letra - 'A') +1;
-    if(letra>='a' && letra<='z')
-        x = (letra - 'a') +1;
+    if (letra >= 'A' && letra <= 'Z')
+        x = (letra - 'A') + 1;
+    if (letra >= 'a' && letra <= 'z')
+        x = (letra - 'a') + 1;
 
     return x;
 }
-
 
 /**************************************************************
                 FUNCION PARA CREAR UN NODO DEL TRIE
@@ -258,38 +260,35 @@ tnodo *nuevo(char letra)
     tnodo *aux;
     int i;
     aux = (tnodo *)malloc(sizeof(tnodo));
-    if(aux!=NULL)
+    if (aux != NULL)
     {
         aux->letra = letra;
-        aux->fin=0;
-        for(i=0; i<TA; i++)
-            aux->hijos[i]=NULL;
+        aux->fin = 0;
+        for (i = 0; i < TA; i++)
+            aux->hijos[i] = NULL;
     }
     return aux;
 }
-
 
 /**************************************************************
                     FUNCION BUSCAR DEL TRIE
 **************************************************************/
 int buscar(char *cade)
 {
-    int exito=0;
-    aux=raiz;
-    letra=cade;
+    int exito = 0;
+    aux = raiz;
+    letra = cade;
 
-    while(aux->hijos[indice(*letra)] != NULL) //si hay un camino
+    while (aux->hijos[indice(*letra)] != NULL) //si hay un camino
     {
         aux = aux->hijos[indice(*letra)];
         letra++;
     }
-    if(aux->fin && *letra == 0)
-        exito = 1;  //palabra existe
+    if (aux->fin && *letra == 0)
+        exito = 1; //palabra existe
 
     return exito;
-
 }
-
 
 /**************************************************************
                     FUNCION INSERTAR DEL TRIE
@@ -298,26 +297,23 @@ int insertar(char *cade)
 {
     int x;
     tnodo *aux2;
-    x= buscar(cade);
-    if(!x)
+    x = buscar(cade);
+    if (!x)
     {
-        if(!aux->fin && *letra==0) //Es un prefijo, no es fin de palabra, caso 2
-            aux->fin=1;
-        while(*letra!=0) //me faltan nodos
+        if (!aux->fin && *letra == 0) //Es un prefijo, no es fin de palabra, caso 2
+            aux->fin = 1;
+        while (*letra != 0) //me faltan nodos
         {
-            aux2=nuevo(*letra);
-            aux2->padre=aux;
-            aux->hijos[indice(*letra)]=aux2;
-            aux=aux2;
+            aux2 = nuevo(*letra);
+            aux2->padre = aux;
+            aux->hijos[indice(*letra)] = aux2;
+            aux = aux2;
             letra++;
         }
-        aux->fin=1;
-
+        aux->fin = 1;
     }
     return x;
-
 }
-
 
 /**************************************************************
                 FUNCION PARA LEER EL ARCHIVO
@@ -329,27 +325,26 @@ void leerDiccionario()
     FILE *archivo;
 
     //ejemplo();
-    archivo = fopen("diccionario20202.txt","r");//abre el archivo con permisos de solo lecta
+    archivo = fopen("diccionario20202.txt", "r"); //abre el archivo con permisos de solo lecta
 
-    if(archivo == NULL)
+    if (archivo == NULL)
         exit(1);
     else
     {
-        while(!feof(archivo)) //si existe algo en el archivo
+        while (!feof(archivo)) //si existe algo en el archivo
         {
-            fgets(cadena,50,archivo);//se obtiene cada cadena y se guarda en cadena
+            fgets(cadena, 50, archivo); //se obtiene cada cadena y se guarda en cadena
             insertar(cadena);
         }
     }
-    fclose(archivo);//se cierra el archivo
+    fclose(archivo); //se cierra el archivo
     int t = 0;
-    while(cadena[t] != '\0') //para que no quede guardada la cadena
+    while (cadena[t] != '\0') //para que no quede guardada la cadena
     {
         cadena[t] = '\0';
         t++;
     }
 }
-
 
 /**************************************************************
             FUNCION PARA IMPRIMIR EL MENU PRINCIPAL
@@ -364,13 +359,13 @@ int menuPrincipal()
     printf("\n / /_/ /  / /_/ /  / /_/ /  / /_/ /   / /___  / /___     ");
     printf("\n/_____/   \\____/   \\____/   \\____/   /_____/ /_____/     ");
 
-    cout << "\n\n\n1)Jugar\n2)Puntuaciones\n3)Salir\n" << endl;
+    cout << "\n\n\n1)Jugar\n2)Puntuaciones\n3)Salir\n"
+         << endl;
     cout << "Introduzca el numero de la opcion deseada: ";
     cin >> opc;
 
     return opc;
 }
-
 
 /**************************************************************
             FUNCION PARA INICIALIZAR EL TABLERO
@@ -384,7 +379,6 @@ void inicializarTablero()
             tablero[i][j] = 0;
     }
 }
-
 
 /**************************************************************
                 FUNCION PARA GENERAR EL TABLERO
@@ -400,14 +394,13 @@ void generarTablero()
     }
 }
 
-
 /**************************************************************
                 FUNCION PARA IMPRIMIR EL TABLERO
 **************************************************************/
 void imprimirTablero()
 {
     //Imprime el tablero de forma bonita
-    printf ("\n\n");
+    printf("\n\n");
     cout << "\t    ____________________________ \n";
     cout << "\t   ||--------------------------||\n";
     for (int i = 0; i < FILAS; i++)
@@ -415,16 +408,15 @@ void imprimirTablero()
         cout << "\t   ||  ";
         for (int j = 0; j < COLUMNAS; j++)
         {
-            printf ("%c  ", tablero[i][j]);
+            printf("%c  ", tablero[i][j]);
         }
         cout << "||";
-        printf ("\n");
+        printf("\n");
     }
     cout << "\t   ||--------------------------||\n";
     cout << "\t   ||__________________________|| \n";
-    printf ("\n\n");
+    printf("\n\n");
 }
-
 
 /**************************************************************
                     FUNCION PARA GENERAR LETRAS
@@ -438,7 +430,7 @@ char generateRandom()
     string vowels = "aeiou";
     int num = (rand() % (4 - 0 + 1)) + 0;
 
-    if(num == 0 || num == 1)
+    if (num == 0 || num == 1)
     {
         num = (rand() % (4 - 0 + 1)) + 0;
         return vowels[num];
@@ -450,7 +442,6 @@ char generateRandom()
     }
 }
 
-
 /**************************************************************
         FUNCIONES PARA VALIDAR LA PALABRA EN EL TABLERO
 **************************************************************/
@@ -458,19 +449,19 @@ void validarPalabra(char *cadena)
 {
     int s = 0;
 
-    for(int i = 0; i < FILAS; i++)
+    for (int i = 0; i < FILAS; i++)
     {
-        for(int j = 0; j < COLUMNAS; j++)
+        for (int j = 0; j < COLUMNAS; j++)
         {
             s = 1;
-            if(tablero[i][j] == cadena[0]) //se checa si una letra en el tablero es igual a la primera a buscar
+            if (tablero[i][j] == cadena[0]) //se checa si una letra en el tablero es igual a la primera a buscar
             {
-                banderas[i][j] = 1;//se levanta una bandera en el lugar de la letra inicial
-                vecinos(i, j, cadena, s);//función para checar alrededor de la letra si existe un camino a las demás
-                if(encontrada == true) //salir de los ciclos
+                banderas[i][j] = 1;       //se levanta una bandera en el lugar de la letra inicial
+                vecinos(i, j, cadena, s); //funciï¿½n para checar alrededor de la letra si existe un camino a las demï¿½s
+                if (encontrada == true)   //salir de los ciclos
                 {
-                    i=7;
-                    j=7;
+                    i = 7;
+                    j = 7;
                 }
                 else
                 {
@@ -481,26 +472,30 @@ void validarPalabra(char *cadena)
     }
 }
 
-//función recursiva para checar si existe el camino en todas las direcciones hacia una palabra buscada
+//funciï¿½n recursiva para checar si existe el camino en todas las direcciones hacia una palabra buscada
 void vecinos(int i, int j, char *siguiente, int s)
 {
-    if(s == strlen(siguiente)) //si se llegó al final, se marca la palabra como encontrada
+    if (s == strlen(siguiente)) //si se llegï¿½ al final, se marca la palabra como encontrada
     {
         encontrada = true;
     }
 
-    for(int k=1; k>=-1; k--)
+    for (int k = 1; k >= -1; k--)
     {
-        for(int l=1; l>=-1; l--)
+        for (int l = 1; l >= -1; l--)
         {
-            if(i-k == -1 || i-k == FILAS) {}
-            else if(j-l == -1 || j-l == COLUMNAS) {}
+            if (i - k == -1 || i - k == FILAS)
+            {
+            }
+            else if (j - l == -1 || j - l == COLUMNAS)
+            {
+            }
             else
             {
-                if(tablero[i-k][j-l] == siguiente[s] && banderas[i-k][j-l] == 0) //se busca alrededor de cada letra
+                if (tablero[i - k][j - l] == siguiente[s] && banderas[i - k][j - l] == 0) //se busca alrededor de cada letra
                 {
                     banderas[i][j] = 1;
-                    vecinos(i-k, j-l, siguiente, s+1);//avanzar entre letras
+                    vecinos(i - k, j - l, siguiente, s + 1); //avanzar entre letras
                 }
             }
         }
@@ -510,9 +505,9 @@ void vecinos(int i, int j, char *siguiente, int s)
 //funcion para reiniciar las banderas del tablero
 void reiniciar()
 {
-    for(int i=0; i<FILAS; i++)
+    for (int i = 0; i < FILAS; i++)
     {
-        for(int j=0; j<COLUMNAS; j++)
+        for (int j = 0; j < COLUMNAS; j++)
         {
             banderas[i][j] = 0;
         }
@@ -520,13 +515,12 @@ void reiniciar()
     encontrada = false;
 }
 
-
 /**************************************************************
                     FUNCIONES PARA EL HASH
 **************************************************************/
 void inicializarHash()
 {
-    for(int i = 0; i < M; i++)
+    for (int i = 0; i < M; i++)
     {
         //todas las casillas inician desocupadas
         arr[i].ocupado = false;
@@ -549,34 +543,34 @@ int fhash(char *llave)
 
 int insertarHash(char *llave)
 {
-    int pos = 0, orig = 0;  //posicion actual, casilla original
-    int intento = 1;    //numero de intento de insercion
+    int pos = 0, orig = 0; //posicion actual, casilla original
+    int intento = 1;       //numero de intento de insercion
     orig = pos = fhash(llave);
     int x = -1; //-1 = no se pudo insertar
 
     //mientras la casilla este ocupada y no me haya pasado del limite maximo del arreglo, sigue intentando
-    while(arr[pos].ocupado == true && pos < M)
+    while (arr[pos].ocupado == true && pos < M)
     {
         intento++;
-        pos = orig + (intento * intento)%M;
+        pos = orig + (intento * intento) % M;
     }
 
     //si nos pasamos del arreglo, pero no encontramos espacio
-    if(arr[pos].ocupado == true)
+    if (arr[pos].ocupado == true)
     {
-        while(arr[pos].ocupado == true && pos > -1)
+        while (arr[pos].ocupado == true && pos > -1)
         {
             intento++;
-            pos = orig - (intento * intento)%M;
+            pos = orig - (intento * intento) % M;
         }
     }
 
     //si el lugar no esta ocupado
-    if(arr[pos].ocupado == false)
+    if (arr[pos].ocupado == false)
     {
         strcpy(arr[pos].llave, llave);
         arr[pos].palabraEncontrada = true; //la palabra ha sido encontrada
-        arr[pos].ocupado = true;    //si no estaba ocupado, ahora si
+        arr[pos].ocupado = true;           //si no estaba ocupado, ahora si
         x = pos;
     }
 
@@ -585,15 +579,15 @@ int insertarHash(char *llave)
 
 int buscarHash(char *llave)
 {
-    int pos = 0, orig = 0, i = -1;     //posicion actual, posicion original, variable equis para regresar posicion
-    int bandera = 0, intento = 1;   //bandera para bucle, intentos de sondeo
+    int pos = 0, orig = 0, i = -1; //posicion actual, posicion original, variable equis para regresar posicion
+    int bandera = 0, intento = 1;  //bandera para bucle, intentos de sondeo
     orig = fhash(llave);
     pos = orig;
 
     do
     {
         //mejor caso, la llave se encuentra luego luego y la casilla esta ocupada
-        if(strcmp(llave, arr[pos].llave) == 0 && arr[pos].ocupado == true)
+        if (strcmp(llave, arr[pos].llave) == 0 && arr[pos].ocupado == true)
         {
             i = pos;
             bandera = 1; //se encontro la llave
@@ -601,26 +595,24 @@ int buscarHash(char *llave)
         else
         {
             intento++;
-            pos = orig + (intento * intento)%M;
+            pos = orig + (intento * intento) % M;
         }
 
-    }
-    while(bandera == 0 && pos < M);
+    } while (bandera == 0 && pos < M);
 
     //si nos pasamos del arreglo, pero no encontramos el que buscamos
-    if(bandera == 0)
+    if (bandera == 0)
     {
         intento = 1;
         do
         {
-            pos = orig - (intento * intento)%M;
-            if(strcmp(llave, arr[pos].llave) == 0 && arr[pos].ocupado == true)
+            pos = orig - (intento * intento) % M;
+            if (strcmp(llave, arr[pos].llave) == 0 && arr[pos].ocupado == true)
             {
                 i = pos;
             }
             intento++;
-        }
-        while(arr[pos].ocupado == true || pos > -1);
+        } while (arr[pos].ocupado == true || pos > -1);
     }
 
     return i;
@@ -630,10 +622,9 @@ int eliminarHash()
 {
     int x = 0;
 
-
-    while(x < M)
+    while (x < M)
     {
-        if(arr[x].ocupado = true)
+        if (arr[x].ocupado = true)
         {
             arr[x].ocupado = false; //si estaba ocupado entonces ya no
         }
@@ -643,16 +634,29 @@ int eliminarHash()
     return x;
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
+/**************************************************************
+            FUNCIONES PARA GUARDAR EL PUNTAJE
+**************************************************************/
+void guardarPuntaje()
+{
+    cout << "Desea guardar su puntuacion? Si / No" << endl;
+    cin >> respuesta;
+    transform(respuesta.begin(), respuesta.end(), respuesta.begin(), ::tolower); //para convertir el input a minusculas y poder manipular mejor la opcion del usuario.
+    if (respuesta == "si")
+    {
+        do
+        {
+            respuesta = "";
+            cout << "Introduce un nombre o alias para guardar el puntaje: ";
+            cin >> alias;
+        } while (respuesta == "si");
+    }
+    else if (respuesta == "no")
+    {
+        cout << "Gracias por jugar nuestro Boogle." << endl;
+    }
+    else
+    {
+        cout << "Esa no es una opcion, perdiste todos tus puntos por no leer bien." << endl;
+    }
+}
